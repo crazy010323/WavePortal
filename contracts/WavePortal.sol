@@ -13,7 +13,7 @@ contract WavePortal {
     mapping (address => WaveInfo[]) private waves;
     uint private seed;
 
-    event NewWave(address indexed from, uint timestamp, string message);
+    event NewWave(string message, uint timestamp);
 
     constructor() payable {
         console.log("We've been constructed!");
@@ -30,9 +30,8 @@ contract WavePortal {
 
         waves[msg.sender].push(WaveInfo(_message, block.timestamp));
         console.log("%s has waved at %d: %s", msg.sender, block.timestamp, _message);
-        emit NewWave(msg.sender, block.timestamp, _message);
+        emit NewWave(_message, block.timestamp);
 
-        
         // Generate a new seed for the next user that sends a wave
         seed = (block.timestamp + block.difficulty + seed) % 100;
         console.log("Random # generated : ", seed);
