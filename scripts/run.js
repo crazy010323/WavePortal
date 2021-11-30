@@ -1,4 +1,12 @@
 
+const logMsgs = (messages, timestamps) => {
+    for (let i = 0; i < messages.length; i++) {
+        const message = messages[i];
+        const timestamp = timestamps[i] * 1000;
+        console.log(' - "', message, '" at ', new Date(timestamp).toISOString());
+    }
+};
+
 const main = async () => {
 
     const [owner, randomPerson] = await hre.ethers.getSigners();
@@ -13,30 +21,34 @@ const main = async () => {
     console.log("Contract deployed to: ", waveContract.address);
     console.log("Contract deployed by: ", owner.address);
     
-    // Wave with the owner
+    
     let waveTxn;
 
     // Wave with the owner
-    console.log("==========================================================");
-    waveTxn = await waveContract.wave();
-    for (let index = 0; index < 10; index++) {
-        waveTxn = await waveContract.wave();
-        await waveTxn.wait();
-    }
-    console.log("==========================================================");
-
+    waveTxn = await waveContract.wave("I'm the owner!!!");
+    await waveTxn.wait();
+    
     // Wave with the randomPerson
-    console.log("==========================================================");
-    for (let index = 0; index < 5; index++) {
-        waveTxn = await waveContract.connect(randomPerson).wave();
-        await waveTxn.wait();
-    }
-    console.log("==========================================================");
+    waveTxn = await waveContract.connect(randomPerson).wave("I'm the randomPerson!!!");
+    await waveTxn.wait();
+    
+    // check feedback
+    const resultsForOwner = await waveContract.getWaves(owner.address);
+    const {0: messagesForOwner, 1: timestampsForOwner} = resultsForOwner;
+    const resultsForRandomPerson = await waveContract.getWaves(randomPerson.address);
+    const {0: messagesForRandomPerson, 1: timestampsForRandomPerson} = resultsForRandomPerson;
+    
+    console.log("=========================================================");
+    console.log("===== Message Logs From ", owner.address);
+    console.log("=========================================================");
+    logMsgs(messagesForOwner, timestampsForOwner);
+    console.log("=========================================================");
 
-    const waveCntOwner = await waveContract.getWaves(owner.address);
-    const waveCntRandomPerson = await waveContract.getWaves(randomPerson.address);
-    console.log("We have %d wave(s) from %s!!!", waveCntOwner, owner.address);
-    console.log("We have %d wave(s) from %s!!!", waveCntRandomPerson, randomPerson.address);
+    console.log("=========================================================");
+    console.log("===== Message Logs From ", randomPerson.address);
+    console.log("=========================================================");
+    logMsgs(messagesForRandomPerson, timestampsForRandomPerson);
+    console.log("=========================================================");
 };
 
 const runMain = async () => {
