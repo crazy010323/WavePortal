@@ -35,10 +35,13 @@ const main = async () => {
 
     let waveTxn;
 
-    // Wave with the owner
-    waveTxn = await waveContract.wave("I'm the owner!!!");
+    // Wave with the owner twice
+    waveTxn = await waveContract.wave("I'm the owner - 1!!!");
     await waveTxn.wait();
-    console.log('Contract balance (after owner): ', hre.ethers.utils.formatEther(contractBalance));
+    console.log('Contract balance (after owner 1): ', hre.ethers.utils.formatEther(contractBalance));
+    waveTxn = await waveContract.wave("I'm the owner - 2!!!");
+    await waveTxn.wait();
+    console.log('Contract balance (after owner 2): ', hre.ethers.utils.formatEther(contractBalance));
     
     // Wave with the randomPerson
     waveTxn = await waveContract.connect(randomPerson).wave("I'm the randomPerson!!!");

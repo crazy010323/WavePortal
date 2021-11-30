@@ -21,6 +21,13 @@ contract WavePortal {
     }
 
     function wave(string memory _message) public {
+
+        WaveInfo[] storage wavesBefore = waves[msg.sender];
+        require(
+            wavesBefore.length == 0 || wavesBefore[wavesBefore.length-1].timestamp + 15 minutes < block.timestamp,
+            'Wait 15 minutes!!!'
+        );
+
         waves[msg.sender].push(WaveInfo(_message, block.timestamp));
         console.log("%s has waved at %d: %s", msg.sender, block.timestamp, _message);
         emit NewWave(msg.sender, block.timestamp, _message);
@@ -28,6 +35,7 @@ contract WavePortal {
         
         // Generate a new seed for the next user that sends a wave
         seed = (block.timestamp + block.difficulty + seed) % 100;
+        console.log("Random # generated : ", seed);
         if ( seed >= 50 ) {
             console.log("%s won", msg.sender);
 
