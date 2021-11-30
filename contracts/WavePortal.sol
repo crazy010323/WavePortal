@@ -10,18 +10,35 @@ contract WavePortal {
         uint timestamp;
     }
 
-    mapping (address => WaveInfo[]) waves;
+    mapping (address => WaveInfo[]) private waves;
+    uint private seed;
 
     event NewWave(address indexed from, uint timestamp, string message);
 
-    constructor() {
-        console.log("I'm a contract and i'm smart");
+    constructor() payable {
+        console.log("We've been constructed!");
+        seed = (block.timestamp + block.difficulty) % 100;
     }
 
     function wave(string memory _message) public {
         waves[msg.sender].push(WaveInfo(_message, block.timestamp));
         console.log("%s has waved at %d: %s", msg.sender, block.timestamp, _message);
         emit NewWave(msg.sender, block.timestamp, _message);
+
+        
+        // Generate a new seed for the next user that sends a wave
+        seed = (block.timestamp + block.difficulty + seed) % 100;
+        if ( seed >= 50 ) {
+            console.log("%s won", msg.sender);
+
+            // send 0.0001 ETH to the winner
+            uint prizeAmount = 0.0001 ether;
+            require(
+                prizeAmount <= address(this).balance,
+                "Trying to withdraw more money than the contract has.");
+            (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+            require(success, "Failed to withdraw money from contract.");
+        }
     }
 
     function getWaves(address _waver) public view returns(string[] memory, uint[] memory) {

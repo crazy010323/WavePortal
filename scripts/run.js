@@ -14,23 +14,36 @@ const main = async () => {
     // This will actually compile our contract and generate the necessary files we need to work with our contract under the artifacts directory.
     const waveContractFactory = await hre.ethers.getContractFactory("WavePortal");
     // Hardhat will create a local Ethereum network for us, but just for this contract.
-    const waveContract = await waveContractFactory.deploy();
+    const waveContract = await waveContractFactory.deploy({
+        value: hre.ethers.utils.parseEther('0.1')
+    });
     // We'll wait until our contract is officially deployed to our local blockchain! Our constructor runs when we actually deploy.
     await waveContract.deployed();
     // Finally, once it's deployed, waveContract.address  will basically give us the address of the deployed contract. 
     console.log("Contract deployed to: ", waveContract.address);
     console.log("Contract deployed by: ", owner.address);
     
-    
+    /**
+     * Get Contract balance
+     */
+    let contractBalance = await hre.ethers.provider.getBalance(waveContract.address);
+    console.log('Contract balance (initial): ', hre.ethers.utils.formatEther(contractBalance));
+
+    /**
+     * Send wave with both people
+     */
+
     let waveTxn;
 
     // Wave with the owner
     waveTxn = await waveContract.wave("I'm the owner!!!");
     await waveTxn.wait();
+    console.log('Contract balance (after owner): ', hre.ethers.utils.formatEther(contractBalance));
     
     // Wave with the randomPerson
     waveTxn = await waveContract.connect(randomPerson).wave("I'm the randomPerson!!!");
     await waveTxn.wait();
+    console.log('Contract balance (before random person): ', hre.ethers.utils.formatEther(contractBalance));
     
     // check feedback
     const resultsForOwner = await waveContract.getWaves(owner.address);
